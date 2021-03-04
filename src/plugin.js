@@ -1,11 +1,13 @@
 import { Context, SDK } from "@absmartly/javascript-sdk";
+import Treatment from "@/components/Treatment";
 
 export default {
 	install(Vue, options) {
 		options = Object.assign(
 			{},
 			{
-				globalName: "$absmartly"
+				globalName: "$absmartly",
+				globalComponents: true
 			},
 			options
 		);
@@ -37,5 +39,9 @@ export default {
 
 		Vue.prototype.__absmartlyGlobal = options.globalName;
 		Vue.prototype[options.globalName] = context;
+
+		if (options.globalComponents) {
+			Vue.component("Treatment", Treatment);
+		}
 	}
 };

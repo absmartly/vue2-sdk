@@ -1,6 +1,7 @@
 import { Context, SDK } from "@absmartly/javascript-sdk";
 import { createLocalVue, mount } from "@vue/test-utils";
 import ABSmartly from "@/plugin";
+import Treatment from "@/components/Treatment.vue";
 
 jest.mock("@absmartly/javascript-sdk");
 
@@ -208,6 +209,52 @@ describe("ABSmartly Vue.js Plugin", () => {
 		});
 
 		expect(wrapper.vm.$exp).toBeInstanceOf(Context);
+
+		done();
+	});
+
+	it("should register components by default", async done => {
+		const localVue = createLocalVue();
+
+		const expectedComponents = {
+			Treatment
+		};
+
+		for (const componentName of Object.keys(expectedComponents)) {
+			expect(localVue.options.components).not.toHaveProperty(componentName);
+		}
+
+		localVue.use(ABSmartly, {
+			sdkOptions
+		});
+
+		for (const componentName of Object.keys(expectedComponents)) {
+			expect(localVue.options.components).toHaveProperty(componentName);
+		}
+
+		done();
+	});
+
+	it("should not register components when options.globalComponents is false", async done => {
+		const localVue = createLocalVue();
+
+		const expectedComponents = {
+			Treatment
+		};
+
+		for (const componentName of Object.keys(expectedComponents)) {
+			expect(localVue.options.components).not.toHaveProperty(componentName);
+		}
+
+		const globalComponents = false;
+		localVue.use(ABSmartly, {
+			sdkOptions,
+			globalComponents
+		});
+
+		for (const componentName of Object.keys(expectedComponents)) {
+			expect(localVue.options.components).not.toHaveProperty(componentName);
+		}
 
 		done();
 	});

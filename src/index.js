@@ -1,9 +1,10 @@
 import { Context, SDK, mergeConfig } from "@absmartly/javascript-sdk";
-import ABSmartly from "./plugin";
+import ABSmartlyVue from "./plugin";
 import Treatment from "./components/Treatment.vue";
 
 if (typeof window !== "undefined" && window.Vue) {
-	window.Vue.use(ABSmartly);
+	window.Vue.use(ABSmartlyVue);
 }
 
-export default { ABSmartly, Treatment, Context, SDK, mergeConfig };
+export { ABSmartlyVue, Treatment, Context, SDK, mergeConfig };
+export default { ABSmartlyVue, Treatment, Context, SDK, mergeConfig };

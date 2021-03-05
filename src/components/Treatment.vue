@@ -6,6 +6,7 @@ export default {
 			type: String,
 			required: true
 		},
+
 		attributes: {
 			type: Object,
 			default() {
@@ -13,6 +14,7 @@ export default {
 			}
 		}
 	},
+
 	data() {
 		return {
 			ready: false,
@@ -22,6 +24,7 @@ export default {
 			config: undefined
 		};
 	},
+
 	render(createElement) {
 		const findSlot = (obj, names) => {
 			for (const name of names) {

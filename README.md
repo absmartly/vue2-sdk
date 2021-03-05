@@ -24,7 +24,7 @@ You can include an optimized and pre-built package directly in your HTML code th
 
 Simply add the following code to your `head` section to include the latest published version.
 ```html
-    <script src="https://unpkg.com/@absmartly/vue2-sdk/dist/absmartly.min.js"></script>
+    <script src="https://unpkg.com/@absmartly/vue2-sdk"></script>
 ```
 
 ## Getting Started
@@ -33,9 +33,9 @@ Please follow the [installation](#installation) instructions before trying the f
 
 #### Import the SDK into your project
 ```javascript
-const { ABSmartly } = require('@absmartly/vue2-sdk');
+const absmartly = require('@absmartly/vue2-sdk');
 // OR with ES6 modules:
-import { ABSmartly } from '@absmartly/vue2-sdk';
+import absmartly from '@absmartly/vue2-sdk';
 ```
 
 #### Basic initialization
@@ -45,12 +45,12 @@ The Vue2 SDK is a thin wrapper around our Javascript SDK. Please check the [A/B 
 
 ```javascript
 // somewhere in your application initialization code, before mounting your Vue application
-Vue.use(ABSmartly, {
+Vue.use(absmartly.ABSmartlyVue, {
     sdkOptions: {
         endpoint: 'https://sandbox-api.absmartly.com/v1',
-        apiKey: process.env.ABSMARTLY_API_KEY,
-        environment: process.env.NODE_ENV,
-        application: process.env.APPLICATION_NAME,
+        apiKey: ABSMARTLY_API_KEY,
+        environment: "production",
+        application: "website",
     },
     context: {
         units: {
@@ -58,7 +58,7 @@ Vue.use(ABSmartly, {
         },
     },
     attributes: {
-        user_agent: navigator.userAgent   
+        user_agent: navigator.userAgent
     }
 });
 ```
@@ -75,12 +75,12 @@ In this example, we assume the variable `prefectedContextData` contains the pre-
 
 ```javascript
 // somewhere in your application initialization code, before mounting your Vue application
-Vue.use(ABSmartly, {
+Vue.use(absmartly.ABSmartlyVue, {
     sdkOptions: {
         endpoint: 'https://sandbox-api.absmartly.com/v1',
-        apiKey: process.env.ABSMARTLY_API_KEY,
-        environment: process.env.NODE_ENV,
-        application: process.env.APPLICATION_NAME,
+        apiKey: ABSMARTLY_API_KEY,
+        environment: "production",
+        application: "website"",
     },
     attributes: {
         user_agent: navigator.userAgent
@@ -97,7 +97,7 @@ The slot selection rules are as follows:
 * If the context is not ready:
     - If the `loading` slot exists, select it
     - Otherwise, select the `default` slot
-    
+
 * Otherwise, if the context is ready:
     - If a slot with the treatment alias (A, B, C, ...) exists, select it
     - Otherwise, if a slot with the treatment index exists, select it
@@ -147,7 +147,7 @@ Example using only the `default` slot:
             <my-button v-else-if="treatment == 1" :color="config.color"></my-button>
             <my-other-button v-else-if="treatment == 2" :color="config.color"></my-other-button>
         </template>
-        <template v-else><my-spinner></my-spinner></template>        
+        <template v-else><my-spinner></my-spinner></template>
     </template>
 </treatment>
 ```
@@ -176,6 +176,7 @@ If the experiment is not running, or the context creation failed, the slot will 
 ```
 
 #### Setting context attributes
+Attributes can be set in script.
 ```javascript
 this.$absmartly.attribute('user_agent', navigator.userAgent);
 
@@ -183,6 +184,22 @@ this.$absmartly.attributes({
     customer_age: 'new_customer',
 });
 ```
+
+Or directly in templates with the `attributes` property of the `Treatment` component.
+
+```html
+<treatment name="exp_test_experiment" :attributes="{customer_age: 'returning'}">
+    <template #default="{ config, treatment, ready }">
+        <template v-if="ready">
+            <my-button v-if="treatment == 0"></my-button>
+            <my-button v-else-if="treatment == 1" :color="config.color"></my-button>
+            <my-other-button v-else-if="treatment == 2" :color="config.color"></my-other-button>
+        </template>
+        <template v-else><my-spinner></my-spinner></template>
+    </template>
+</treatment>
+```
+
 
 #### Tracking a goal achievement
 Goals are created in the A/B Smartly web console.

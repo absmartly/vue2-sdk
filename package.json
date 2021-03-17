@@ -1,6 +1,6 @@
 {
 	"name": "@absmartly/vue2-sdk",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"homepage": "https://github.com/absmartly/vue2-sdk#README.md",
 	"bugs": "https://github.com/absmartly/vue2-sdk/issues",
 	"keywords": [
@@ -22,13 +22,13 @@
 	"unpkg": "dist/absmartly.umd.min.js",
 	"scripts": {
 		"build": "npm run -s format && vue-cli-service lint && vue-cli-service build --progress --target lib --name absmartly src/index.js && rm ./dist/demo.html",
-		"prepack": "npm run -s build",
+		"prepack": "npm -s upgrade && npm run -s build",
 		"test": "vue-cli-service test:unit --coverage",
 		"lint": "vue-cli-service lint",
 		"format": "prettier --write '**/*.{js,mjs,jsx,json,vue}'"
 	},
 	"dependencies": {
-		"@absmartly/javascript-sdk": "^1.2.7"
+		"@absmartly/javascript-sdk": "^1.2.8"
 	},
 	"peerDependencies": {
 		"vue": "^2.6.0"

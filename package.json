@@ -1,6 +1,6 @@
 {
 	"name": "@absmartly/vue2-sdk",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"homepage": "https://github.com/absmartly/vue2-sdk#README.md",
 	"bugs": "https://github.com/absmartly/vue2-sdk/issues",
 	"keywords": [
@@ -28,7 +28,7 @@
 		"format": "prettier --write '**/*.{js,mjs,jsx,json,vue}'"
 	},
 	"dependencies": {
-		"@absmartly/javascript-sdk": "^1.2.8"
+		"@absmartly/javascript-sdk": "^1.3.0"
 	},
 	"peerDependencies": {
 		"vue": "^2.6.0"

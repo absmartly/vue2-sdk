@@ -47,13 +47,18 @@ describe("ABSmartly Vue.js Plugin", () => {
 		attr2: "value2"
 	};
 
+	const overrides = {
+		not_found: 2
+	};
+
 	it("should create SDK and context", async done => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
 			context,
 			contextOptions,
-			attributes: attrs
+			attributes: attrs,
+			overrides
 		});
 
 		const wrapper = mount(Component, {
@@ -68,6 +73,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledWith(attrs);
 
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
+
 		done();
 	});
 
@@ -76,7 +84,8 @@ describe("ABSmartly Vue.js Plugin", () => {
 		localVue.use(ABSmartly, {
 			sdkOptions,
 			context,
-			attributes: attrs
+			attributes: attrs,
+			overrides
 		});
 
 		const wrapper = mount(Component, {
@@ -93,10 +102,13 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledWith(attrs);
 
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
+
 		done();
 	});
 
-	it("should create SDK and context with no attributes", async done => {
+	it("should create SDK and context with no attributes and no overrides", async done => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -114,6 +126,7 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(mockCreateContext).toHaveBeenCalledWith(context, contextOptions);
 
 		expect(wrapper.vm.$absmartly.attributes).not.toHaveBeenCalled();
+		expect(wrapper.vm.$absmartly.overrides).not.toHaveBeenCalled();
 
 		done();
 	});
@@ -124,7 +137,8 @@ describe("ABSmartly Vue.js Plugin", () => {
 			sdkOptions,
 			data,
 			contextOptions,
-			attributes: attrs
+			attributes: attrs,
+			overrides
 		});
 
 		const wrapper = mount(Component, {
@@ -139,6 +153,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledWith(attrs);
 
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
+
 		done();
 	});
 
@@ -147,7 +164,8 @@ describe("ABSmartly Vue.js Plugin", () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			context: mockContext,
-			attributes: attrs
+			attributes: attrs,
+			overrides
 		});
 
 		const wrapper = mount(Component, {
@@ -160,6 +178,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 		expect(mockContext.attributes).toHaveBeenCalledTimes(1);
 		expect(mockContext.attributes).toHaveBeenCalledWith(attrs);
+
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
+		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
 
 		expect(wrapper.vm.$absmartly).toBe(mockContext);
 

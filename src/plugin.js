@@ -37,6 +37,10 @@ export default {
 			context.attributes(options.attributes);
 		}
 
+		if (options.overrides instanceof Object) {
+			context.overrides(options.overrides);
+		}
+
 		Vue.prototype.__absmartlyGlobal = options.globalName;
 		Vue.prototype[options.globalName] = context;
 

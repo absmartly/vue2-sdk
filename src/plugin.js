@@ -27,7 +27,7 @@ export default {
 			);
 
 			if (options.data) {
-				context = sdk.createContextWith(options.data, contextOptions);
+				context = sdk.createContextWith(context, options.data, contextOptions);
 			} else {
 				context = sdk.createContext(context, contextOptions);
 			}

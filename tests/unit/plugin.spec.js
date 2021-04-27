@@ -135,6 +135,7 @@ describe("ABSmartly Vue.js Plugin", () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
+			context,
 			data,
 			contextOptions,
 			attributes: attrs,
@@ -148,7 +149,7 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(SDK).toHaveBeenCalledTimes(1);
 		expect(SDK).toHaveBeenLastCalledWith(sdkOptions);
 		expect(mockCreateContextWith).toHaveBeenCalledTimes(1);
-		expect(mockCreateContextWith).toHaveBeenCalledWith(data, contextOptions);
+		expect(mockCreateContextWith).toHaveBeenCalledWith(context, data, contextOptions);
 
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.attributes).toHaveBeenCalledWith(attrs);

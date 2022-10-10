@@ -13,7 +13,7 @@ export default {
 				return undefined;
 			}
 		},
-		trackOnView: {
+		triggerOnView: {
 			type: Boolean,
 			default() {
 				return false;
@@ -70,7 +70,7 @@ export default {
 					context.attributes(this.attributes);
 				}
 
-				this.treatment = this.trackOnView ? context.peek(this.name) : context.treatment(this.name);
+				this.treatment = this.triggerOnView ? context.peek(this.name) : context.treatment(this.name);
 				this.ready = true;
 			}
 
@@ -102,7 +102,7 @@ export default {
 
 		const observer = new IntersectionObserver(handleObserved, { root: null, rootMargin: "0px", threshold: 0 });
 
-		if (this.trackOnView) observer.observe(this.$el);
+		if (this.triggerOnView) observer.observe(this.$el);
 	}
 };
 </script>

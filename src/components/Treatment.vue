@@ -12,6 +12,12 @@ export default {
 			default() {
 				return undefined;
 			}
+		},
+		trackOnView: {
+			type: Boolean,
+			default() {
+				return false;
+			}
 		}
 	},
 
@@ -64,7 +70,7 @@ export default {
 					context.attributes(this.attributes);
 				}
 
-				this.treatment = context.treatment(this.name);
+				this.treatment = this.trackOnView ? context.peek(this.name) : context.treatment(this.name);
 				this.ready = true;
 			}
 
@@ -85,6 +91,18 @@ export default {
 				updateState(context);
 			});
 		}
+	},
+	mounted() {
+		const handleObserved = entries => {
+			const context = this[this.__absmartlyGlobal];
+			if (entries[0].intersectionRatio <= 0) return;
+
+			context.ready().then(() => context.treatment(this.name));
+		};
+
+		const observer = new IntersectionObserver(handleObserved, { root: null, rootMargin: "0px", threshold: 0 });
+
+		if (this.trackOnView) observer.observe(this.$el);
 	}
 };
 </script>

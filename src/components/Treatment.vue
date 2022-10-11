@@ -45,7 +45,6 @@ export default {
 		const props = this.ready
 			? {
 					treatment: this.treatment || 0,
-					config: this.config,
 					ready: this.ready,
 					failed: this.failed
 			  }
@@ -77,10 +76,8 @@ export default {
 
 			if (this.ready) {
 				this.treatmentNames = [String.fromCharCode(65 + this.treatment), this.treatment.toString(), "default"];
-				this.config = context.experimentConfig(this.name);
 			} else {
 				this.treatmentNames = ["loading", "default"];
-				this.config = {};
 			}
 		};
 

@@ -6,7 +6,6 @@ describe("Treatment.vue", () => {
 		__absmartlyGlobal: "$absmartly",
 		$absmartly: {
 			treatment: jest.fn(),
-			experimentConfig: jest.fn(),
 			attributes: jest.fn(),
 			ready: jest.fn(),
 			isReady: jest.fn(),
@@ -18,7 +17,6 @@ describe("Treatment.vue", () => {
 		const slotMock = jest.fn();
 		const loadingMock = jest.fn();
 
-		const config = { a: 1, b: 2 };
 		const attributes = {
 			attr1: 15,
 			attr2: 50
@@ -27,7 +25,6 @@ describe("Treatment.vue", () => {
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
 		mocks.$absmartly.treatment.mockReturnValue(1);
-		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 		shallowMount(Treatment, {
 			propsData: {
@@ -43,8 +40,6 @@ describe("Treatment.vue", () => {
 
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-		expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledTimes(1);
-		expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledWith("test_exp");
 		expect(mocks.$absmartly.attributes).toHaveBeenCalledTimes(1);
 		expect(mocks.$absmartly.attributes).toHaveBeenCalledWith(attributes);
 		expect(loadingMock).not.toHaveBeenCalled();
@@ -52,8 +47,7 @@ describe("Treatment.vue", () => {
 		expect(slotMock).toHaveBeenCalledWith({
 			ready: true,
 			failed: false,
-			treatment: 1,
-			config
+			treatment: 1
 		});
 
 		done();
@@ -87,7 +81,6 @@ describe("Treatment.vue", () => {
 		});
 
 		expect(mocks.$absmartly.treatment).not.toHaveBeenCalled();
-		expect(mocks.$absmartly.experimentConfig).not.toHaveBeenCalled();
 		expect(mocks.$absmartly.attributes).not.toHaveBeenCalled();
 		expect(slotMock).not.toHaveBeenCalled();
 		expect(loadingMock).toHaveBeenCalledTimes(1);
@@ -96,25 +89,20 @@ describe("Treatment.vue", () => {
 			failed: false
 		});
 
-		const config = { a: 1, b: 2 };
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.treatment.mockReturnValue(1);
-		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 		ready.then(() => {
 			wrapper.vm.$nextTick(() => {
 				expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 				expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-				expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledTimes(1);
-				expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledWith("test_exp");
 				expect(mocks.$absmartly.attributes).toHaveBeenCalledTimes(1);
 				expect(mocks.$absmartly.attributes).toHaveBeenCalledWith(attributes);
 				expect(slotMock).toHaveBeenCalledTimes(1);
 				expect(slotMock).toHaveBeenCalledWith({
 					ready: true,
 					failed: false,
-					treatment: 1,
-					config
+					treatment: 1
 				});
 
 				done();
@@ -148,7 +136,6 @@ describe("Treatment.vue", () => {
 		});
 
 		expect(mocks.$absmartly.treatment).not.toHaveBeenCalled();
-		expect(mocks.$absmartly.experimentConfig).not.toHaveBeenCalled();
 		expect(mocks.$absmartly.attributes).not.toHaveBeenCalled();
 		expect(slotMock).toHaveBeenCalledTimes(1);
 		expect(slotMock).toHaveBeenCalledWith({
@@ -158,25 +145,20 @@ describe("Treatment.vue", () => {
 
 		slotMock.mockClear();
 
-		const config = { a: 1, b: 2 };
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.treatment.mockReturnValue(1);
-		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 		ready.then(() => {
 			wrapper.vm.$nextTick(() => {
 				expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 				expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-				expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledTimes(1);
-				expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledWith("test_exp");
 				expect(mocks.$absmartly.attributes).toHaveBeenCalledTimes(1);
 				expect(mocks.$absmartly.attributes).toHaveBeenCalledWith(attributes);
 				expect(slotMock).toHaveBeenCalledTimes(1);
 				expect(slotMock).toHaveBeenCalledWith({
 					ready: true,
 					failed: false,
-					treatment: 1,
-					config
+					treatment: 1
 				});
 
 				done();
@@ -193,11 +175,9 @@ describe("Treatment.vue", () => {
 	])("should render treatment slot %i by index (%s)", async (treatment, slot, done) => {
 		const slotMock = jest.fn();
 
-		const config = { a: 1, b: 2 };
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
 		mocks.$absmartly.treatment.mockReturnValue(treatment);
-		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 		shallowMount(Treatment, {
 			propsData: {
@@ -213,8 +193,7 @@ describe("Treatment.vue", () => {
 		expect(slotMock).toHaveBeenCalledWith({
 			ready: true,
 			failed: false,
-			treatment: treatment,
-			config
+			treatment: treatment
 		});
 
 		done();
@@ -229,11 +208,9 @@ describe("Treatment.vue", () => {
 	])("should render treatment slot %i by alpha (%s)", async (treatment, slot, done) => {
 		const slotMock = jest.fn();
 
-		const config = { a: 1, b: 2 };
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
 		mocks.$absmartly.treatment.mockReturnValue(treatment);
-		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 		shallowMount(Treatment, {
 			propsData: {
@@ -249,8 +226,7 @@ describe("Treatment.vue", () => {
 		expect(slotMock).toHaveBeenCalledWith({
 			ready: true,
 			failed: false,
-			treatment,
-			config
+			treatment
 		});
 
 		done();
@@ -261,11 +237,9 @@ describe("Treatment.vue", () => {
 		async (treatment, done) => {
 			const slotMock = jest.fn();
 
-			const config = { a: 1, b: 2 };
 			mocks.$absmartly.isReady.mockReturnValue(true);
 			mocks.$absmartly.isFailed.mockReturnValue(false);
 			mocks.$absmartly.treatment.mockReturnValue(treatment);
-			mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
 			shallowMount(Treatment, {
 				propsData: {
@@ -281,8 +255,7 @@ describe("Treatment.vue", () => {
 			expect(slotMock).toHaveBeenCalledWith({
 				ready: true,
 				failed: false,
-				treatment,
-				config
+				treatment
 			});
 
 			done();
@@ -295,7 +268,6 @@ describe("Treatment.vue", () => {
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
 		mocks.$absmartly.treatment.mockReturnValue(2);
-		mocks.$absmartly.experimentConfig.mockReturnValue({});
 
 		expect(() => {
 			jest.spyOn(console, "error").mockImplementation(() => {}); // suppress expected Vue error
@@ -320,7 +292,6 @@ describe("Treatment.vue", () => {
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
 		mocks.$absmartly.treatment.mockReturnValue(1);
-		mocks.$absmartly.experimentConfig.mockReturnValue({});
 
 		shallowMount(Treatment, {
 			propsData: {
@@ -334,8 +305,6 @@ describe("Treatment.vue", () => {
 
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-		expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledTimes(1);
-		expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledWith("test_exp");
 		expect(mocks.$absmartly.attributes).not.toHaveBeenCalledWith();
 		expect(slotMock).toHaveBeenCalledTimes(1);
 

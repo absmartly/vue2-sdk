@@ -100,9 +100,12 @@ export default {
 			context.ready().then(() => context.treatment(this.name));
 		};
 
-		const observer = new IntersectionObserver(handleObserved, { root: null, rootMargin: "0px", threshold: 0 });
+		this.observer = new IntersectionObserver(handleObserved, { root: null, rootMargin: "0px", threshold: 0 });
 
-		if (this.triggerOnView) observer.observe(this.$el);
+		if (this.triggerOnView) this.observer.observe(this.$el);
+	},
+	unmounted() {
+		this.observer.unobserve(this.$el);
 	}
 };
 </script>

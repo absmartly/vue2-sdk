@@ -1,4 +1,5 @@
 <script>
+require("../IntersectionObserver");
 export default {
 	name: "Treatment",
 	props: {

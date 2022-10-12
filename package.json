@@ -21,8 +21,8 @@
 	"browser": "dist/absmartly.umd.js",
 	"unpkg": "dist/absmartly.umd.min.js",
 	"scripts": {
-		"build": "npm run -s format && vue-cli-service lint && vue-cli-service build --progress --target lib --name absmartly src/index.js && rm ./dist/demo.html",
-		"prepack": "npm -s upgrade && npm run -s build",
+		"build": "yarn -s format && vue-cli-service lint && vue-cli-service build --progress --target lib --name absmartly src/index.js && rm ./dist/demo.html",
+		"prepack": "yarn -s upgrade && yarn -s build",
 		"test": "vue-cli-service test:unit --coverage",
 		"lint": "vue-cli-service lint",
 		"format": "prettier --write '**/*.{js,mjs,jsx,json,vue}'"
@@ -56,5 +56,6 @@
 		"LICENSE",
 		"package.json",
 		"dist"
-	]
+	],
+	"packageManager": "yarn@1.22.19"
 }

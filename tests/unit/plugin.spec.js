@@ -51,7 +51,7 @@ describe("ABSmartly Vue.js Plugin", () => {
 		not_found: 2
 	};
 
-	it("should create SDK and context", async done => {
+	it("should create SDK and context", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -75,11 +75,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
-
-		done();
 	});
 
-	it("should create context with default options", async done => {
+	it("should create context with default options", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -104,11 +102,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
-
-		done();
 	});
 
-	it("should create SDK and context with no attributes and no overrides", async done => {
+	it("should create SDK and context with no attributes and no overrides", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -127,11 +123,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 		expect(wrapper.vm.$absmartly.attributes).not.toHaveBeenCalled();
 		expect(wrapper.vm.$absmartly.overrides).not.toHaveBeenCalled();
-
-		done();
 	});
 
-	it("should create SDK and context with data", async done => {
+	it("should create SDK and context with data", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -156,11 +150,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledTimes(1);
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
-
-		done();
 	});
 
-	it("should use passed context", async done => {
+	it("should use passed context", async () => {
 		const mockContext = new Context();
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
@@ -184,11 +176,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		expect(wrapper.vm.$absmartly.overrides).toHaveBeenCalledWith(overrides);
 
 		expect(wrapper.vm.$absmartly).toBe(mockContext);
-
-		done();
 	});
 
-	it("should add global $absmartly context object", async done => {
+	it("should add global $absmartly context object", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions
@@ -199,11 +189,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		});
 
 		expect(wrapper.vm.$absmartly).toBeInstanceOf(Context);
-
-		done();
 	});
 
-	it("should add options.globalName context object", async done => {
+	it("should add options.globalName context object", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -215,11 +203,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		});
 
 		expect(wrapper.vm.$exp).toBeInstanceOf(Context);
-
-		done();
 	});
 
-	it("should add options.globalName context object", async done => {
+	it("should add options.globalName context object", async () => {
 		const localVue = createLocalVue();
 		localVue.use(ABSmartly, {
 			sdkOptions,
@@ -231,11 +217,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		});
 
 		expect(wrapper.vm.$exp).toBeInstanceOf(Context);
-
-		done();
 	});
 
-	it("should register components by default", async done => {
+	it("should register components by default", async () => {
 		const localVue = createLocalVue();
 
 		const expectedComponents = {
@@ -253,11 +237,9 @@ describe("ABSmartly Vue.js Plugin", () => {
 		for (const componentName of Object.keys(expectedComponents)) {
 			expect(localVue.options.components).toHaveProperty(componentName);
 		}
-
-		done();
 	});
 
-	it("should not register components when options.globalComponents is false", async done => {
+	it("should not register components when options.globalComponents is false", async () => {
 		const localVue = createLocalVue();
 
 		const expectedComponents = {
@@ -277,7 +259,5 @@ describe("ABSmartly Vue.js Plugin", () => {
 		for (const componentName of Object.keys(expectedComponents)) {
 			expect(localVue.options.components).not.toHaveProperty(componentName);
 		}
-
-		done();
 	});
 });

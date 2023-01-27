@@ -2,19 +2,22 @@ import { shallowMount } from "@vue/test-utils";
 import Treatment from "@/components/Treatment.vue";
 
 describe("Treatment.vue", () => {
-	const mocks = {
-		__absmartlyGlobal: "$absmartly",
-		$absmartly: {
-			treatment: jest.fn(),
-			experimentConfig: jest.fn(),
-			attributes: jest.fn(),
-			ready: jest.fn(),
-			isReady: jest.fn(),
-			isFailed: jest.fn()
-		}
-	};
+	let mocks;
+	beforeEach(() => {
+		mocks = {
+			__absmartlyGlobal: "$absmartly",
+			$absmartly: {
+				treatment: jest.fn(),
+				experimentConfig: jest.fn(),
+				attributes: jest.fn(),
+				ready: jest.fn(),
+				isReady: jest.fn(),
+				isFailed: jest.fn()
+			}
+		};
+	});
 
-	it("it should not render loading slot when ready", async done => {
+	it("it should not render loading slot when ready", async () => {
 		const slotMock = jest.fn();
 		const loadingMock = jest.fn();
 
@@ -55,11 +58,9 @@ describe("Treatment.vue", () => {
 			treatment: 1,
 			config
 		});
-
-		done();
 	});
 
-	it("should render loading slot when not ready", async done => {
+	it("should render loading slot when not ready", async () => {
 		const slotMock = jest.fn();
 		const loadingMock = jest.fn();
 
@@ -116,13 +117,11 @@ describe("Treatment.vue", () => {
 					treatment: 1,
 					config
 				});
-
-				done();
 			});
 		});
 	});
 
-	it("should render default slot when not ready", async done => {
+	it("should render default slot when not ready", async () => {
 		const slotMock = jest.fn();
 
 		mocks.$absmartly.isReady.mockReturnValue(false);
@@ -178,8 +177,6 @@ describe("Treatment.vue", () => {
 					treatment: 1,
 					config
 				});
-
-				done();
 			});
 		});
 	});
@@ -190,7 +187,7 @@ describe("Treatment.vue", () => {
 		[2, "2"],
 		[3, "3"],
 		[4, "4"]
-	])("should render treatment slot %i by index (%s)", async (treatment, slot, done) => {
+	])("should render treatment slot %i by index (%s)", async (treatment, slot) => {
 		const slotMock = jest.fn();
 
 		const config = { a: 1, b: 2 };
@@ -216,8 +213,6 @@ describe("Treatment.vue", () => {
 			treatment: treatment,
 			config
 		});
-
-		done();
 	});
 
 	it.each([
@@ -226,7 +221,7 @@ describe("Treatment.vue", () => {
 		[2, "C"],
 		[3, "D"],
 		[4, "E"]
-	])("should render treatment slot %i by alpha (%s)", async (treatment, slot, done) => {
+	])("should render treatment slot %i by alpha (%s)", async (treatment, slot) => {
 		const slotMock = jest.fn();
 
 		const config = { a: 1, b: 2 };
@@ -252,44 +247,37 @@ describe("Treatment.vue", () => {
 			treatment,
 			config
 		});
-
-		done();
 	});
 
-	it.each([[0], [1], [2], [3], [4]])(
-		"should render default treatment slot for treatment %i",
-		async (treatment, done) => {
-			const slotMock = jest.fn();
+	it.each([[0], [1], [2], [3], [4]])("should render default treatment slot for treatment %i", async treatment => {
+		const slotMock = jest.fn();
 
-			const config = { a: 1, b: 2 };
-			mocks.$absmartly.isReady.mockReturnValue(true);
-			mocks.$absmartly.isFailed.mockReturnValue(false);
-			mocks.$absmartly.treatment.mockReturnValue(treatment);
-			mocks.$absmartly.experimentConfig.mockReturnValue(config);
+		const config = { a: 1, b: 2 };
+		mocks.$absmartly.isReady.mockReturnValue(true);
+		mocks.$absmartly.isFailed.mockReturnValue(false);
+		mocks.$absmartly.treatment.mockReturnValue(treatment);
+		mocks.$absmartly.experimentConfig.mockReturnValue(config);
 
-			shallowMount(Treatment, {
-				propsData: {
-					name: "test_exp"
-				},
-				scopedSlots: {
-					default: slotMock
-				},
-				mocks
-			});
+		shallowMount(Treatment, {
+			propsData: {
+				name: "test_exp"
+			},
+			scopedSlots: {
+				default: slotMock
+			},
+			mocks
+		});
 
-			expect(slotMock).toHaveBeenCalledTimes(1);
-			expect(slotMock).toHaveBeenCalledWith({
-				ready: true,
-				failed: false,
-				treatment,
-				config
-			});
+		expect(slotMock).toHaveBeenCalledTimes(1);
+		expect(slotMock).toHaveBeenCalledWith({
+			ready: true,
+			failed: false,
+			treatment,
+			config
+		});
+	});
 
-			done();
-		}
-	);
-
-	it("should throw with no matching slot", async done => {
+	it("should throw with no matching slot", async () => {
 		const slotMock = jest.fn();
 
 		mocks.$absmartly.isReady.mockReturnValue(true);
@@ -311,11 +299,9 @@ describe("Treatment.vue", () => {
 		}).toThrow(new Error("No matching treatment slots. Expected one of C,2,default"));
 
 		expect(slotMock).not.toHaveBeenCalled();
-
-		done();
 	});
 
-	it("should not call context.attributes with no attribute property", async done => {
+	it("should not call context.attributes with no attribute property", async () => {
 		const slotMock = jest.fn();
 		mocks.$absmartly.isReady.mockReturnValue(true);
 		mocks.$absmartly.isFailed.mockReturnValue(false);
@@ -338,7 +324,5 @@ describe("Treatment.vue", () => {
 		expect(mocks.$absmartly.experimentConfig).toHaveBeenCalledWith("test_exp");
 		expect(mocks.$absmartly.attributes).not.toHaveBeenCalledWith();
 		expect(slotMock).toHaveBeenCalledTimes(1);
-
-		done();
 	});
 });

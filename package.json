@@ -28,7 +28,7 @@
 		"format": "prettier --write '**/*.{js,mjs,jsx,json,vue}'"
 	},
 	"dependencies": {
-		"@absmartly/javascript-sdk": "^1.8.2"
+		"@absmartly/javascript-sdk": "^1.11.4"
 	},
 	"peerDependencies": {
 		"vue": "^2.6.0"

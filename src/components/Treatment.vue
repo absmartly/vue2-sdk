@@ -1,4 +1,5 @@
 <script>
+require("../IntersectionObserver");
 export default {
     name: "Treatment",
     props: {
@@ -7,13 +8,21 @@ export default {
             required: true
         },
 
-        attributes: {
-            type: Object,
-            default() {
-                return undefined;
-            }
-        }
-    },
+
+		attributes: {
+			type: Object,
+			default() {
+				return undefined;
+			}
+		},
+		triggerOnView: {
+			type: Boolean,
+			default() {
+				return false;
+			}
+		}
+	},
+
 
     data() {
         return {
@@ -62,9 +71,9 @@ export default {
                     context.attributes(this.attributes);
                 }
 
-                this.treatment = context.treatment(this.name);
-                this.ready = true;
-            }
+				this.treatment = this.triggerOnView ? context.peek(this.name) : context.treatment(this.name);
+				this.ready = true;
+			}
 
             if (this.ready) {
                 this.treatmentNames = [String.fromCharCode(65 + this.treatment), this.treatment.toString(), "default"];
@@ -76,11 +85,27 @@ export default {
         const context = this[this.__absmartlyGlobal];
         updateState(context);
 
-        if (!context.isReady()) {
-            context.ready().then(() => {
-                updateState(context);
-            });
-        }
-    }
+
+		if (!context.isReady()) {
+			context.ready().then(() => {
+				updateState(context);
+			});
+		}
+	},
+	mounted() {
+		const handleObserved = entries => {
+			const context = this[this.__absmartlyGlobal];
+			if (entries[0].intersectionRatio <= 0) return;
+
+			context.ready().then(() => context.treatment(this.name));
+		};
+
+		this.observer = new IntersectionObserver(handleObserved, { root: null, rootMargin: "0px", threshold: 0 });
+
+		if (this.triggerOnView) this.observer.observe(this.$el);
+	},
+	unmounted() {
+		this.observer.unobserve(this.$el);
+	}
 };
 </script>

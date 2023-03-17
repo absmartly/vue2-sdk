@@ -1,3 +1,5 @@
+require("./IntersectionObserver");
+
 export * from "@absmartly/javascript-sdk";
 
 import ABSmartlyVue from "./plugin";

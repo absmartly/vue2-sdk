@@ -5,7 +5,6 @@ import ABSmartly from "@/plugin";
 jest.mock("@absmartly/javascript-sdk");
 
 const mockTreatment = jest.fn();
-const mockExperimentConfig = jest.fn();
 const mockAttributes = jest.fn();
 const mockOverrides = jest.fn();
 const mockIsReady = jest.fn();
@@ -26,7 +25,6 @@ SDK.mockImplementation(() => {
 Context.mockImplementation(() => {
 	return {
 		treatment: mockTreatment,
-		experimentConfig: mockExperimentConfig,
 		attributes: mockAttributes,
 		overrides: mockOverrides,
 		isReady: mockIsReady,
@@ -43,7 +41,6 @@ describe("Mixin Behavior", () => {
 		mockIsReady.mockReturnValue(true);
 		mockIsFailed.mockReturnValue(false);
 		mockTreatment.mockReturnValue(0);
-		mockExperimentConfig.mockReturnValue({});
 	});
 
 	it("provides context access via globalName property", () => {

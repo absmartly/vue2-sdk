@@ -78,7 +78,9 @@ export default {
 
         if (!context.isReady()) {
             context.ready().then(() => {
-                updateState(context);
+                if (!this._isDestroyed) {
+                    updateState(context);
+                }
             });
         }
     }

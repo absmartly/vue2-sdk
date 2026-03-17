@@ -209,8 +209,8 @@ The slot selection rules are as follows:
     <template #A>
         <my-button></my-button>
     </template>
-    <template #B="{ config }">
-        <my-button :color="config.color"></my-button>
+    <template #B="{ treatment }">
+        <my-button :treatment="treatment"></my-button>
     </template>
     <template #loading>
         <my-spinner></my-spinner>
@@ -225,11 +225,11 @@ The slot selection rules are as follows:
     <template #0>
         <my-button></my-button>
     </template>
-    <template #1="{ config }">
-        <my-button :color="config.color"></my-button>
+    <template #1="{ treatment }">
+        <my-button :treatment="treatment"></my-button>
     </template>
-    <template #2="{ config }">
-        <my-other-button :color="config.color"></my-other-button>
+    <template #2="{ treatment }">
+        <my-other-button :treatment="treatment"></my-other-button>
     </template>
     <template #loading>
         <my-spinner></my-spinner>
@@ -241,11 +241,11 @@ The slot selection rules are as follows:
 
 ```html
 <treatment name="exp_test_experiment">
-    <template #default="{ config, treatment, ready }">
+    <template #default="{ treatment, ready }">
         <template v-if="ready">
             <my-button v-if="treatment == 0"></my-button>
-            <my-button v-else-if="treatment == 1" :color="config.color"></my-button>
-            <my-other-button v-else-if="treatment == 2" :color="config.color"></my-other-button>
+            <my-button v-else-if="treatment == 1"></my-button>
+            <my-other-button v-else-if="treatment == 2"></my-other-button>
         </template>
         <template v-else>
             <my-spinner></my-spinner>
@@ -261,9 +261,6 @@ The scoped slot properties contain information about the A/B Smartly context and
 ```json
 {
     "treatment": 1,
-    "config": {
-        "color": "red"
-    },
     "ready": true,
     "failed": false
 }
@@ -274,7 +271,6 @@ If the experiment is not running, or the context creation failed, the slot will 
 ```json
 {
     "treatment": 0,
-    "config": {},
     "ready": true,
     "failed": false
 }
@@ -364,10 +360,10 @@ Or directly in templates with the `attributes` prop of the `<Treatment>` compone
 
 ```html
 <treatment name="exp_test_experiment" :attributes="{ customer_age: 'returning' }">
-    <template #default="{ config, treatment, ready }">
+    <template #default="{ treatment, ready }">
         <template v-if="ready">
             <my-button v-if="treatment == 0"></my-button>
-            <my-button v-else-if="treatment == 1" :color="config.color"></my-button>
+            <my-button v-else-if="treatment == 1"></my-button>
         </template>
         <template v-else>
             <my-spinner></my-spinner>
@@ -514,9 +510,9 @@ export default new Vuex.Store({
             <template #A>
                 <standard-checkout @complete="onCheckoutComplete"></standard-checkout>
             </template>
-            <template #B="{ config }">
+            <template #B="{ treatment }">
                 <streamlined-checkout
-                    :steps="config.steps"
+                    :treatment="treatment"
                     @complete="onCheckoutComplete"
                 ></streamlined-checkout>
             </template>

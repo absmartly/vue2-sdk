@@ -5,7 +5,6 @@ const createMocks = () => ({
 	__absmartlyGlobal: "$absmartly",
 	$absmartly: {
 		treatment: jest.fn(),
-		experimentConfig: jest.fn(),
 		attributes: jest.fn(),
 		ready: jest.fn(),
 		isReady: jest.fn(),
@@ -296,7 +295,7 @@ describe("Treatment.vue", () => {
 
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-		expect(mocks.$absmartly.attributes).not.toHaveBeenCalledWith();
+		expect(mocks.$absmartly.attributes).not.toHaveBeenCalled();
 		expect(slotMock).toHaveBeenCalledTimes(1);
 	});
 
@@ -530,7 +529,41 @@ describe("Treatment.vue", () => {
 			resolveReady(true);
 			await readyPromise;
 
-			expect(wrapper.vm._isDestroyed).toBe(true);
+			expect(wrapper.vm.$el.parentNode).toBeNull();
+		});
+
+		it("does not update state after destruction when ready resolves", async () => {
+			const defaultMock = jest.fn();
+			let resolveReady;
+			const readyPromise = new Promise(resolve => {
+				resolveReady = resolve;
+			});
+
+			mocks.$absmartly.isReady.mockReturnValue(false);
+			mocks.$absmartly.isFailed.mockReturnValue(false);
+			mocks.$absmartly.ready.mockReturnValue(readyPromise);
+
+			const wrapper = shallowMount(Treatment, {
+				propsData: { name: "test_exp" },
+				scopedSlots: { default: defaultMock },
+				mocks
+			});
+
+			expect(wrapper.vm.ready).toBe(false);
+			expect(wrapper.vm.treatment).toBeUndefined();
+
+			wrapper.destroy();
+
+			mocks.$absmartly.isReady.mockReturnValue(true);
+			mocks.$absmartly.isFailed.mockReturnValue(false);
+			mocks.$absmartly.treatment.mockReturnValue(1);
+
+			resolveReady(true);
+			await readyPromise;
+			await wrapper.vm.$nextTick();
+
+			expect(wrapper.vm.ready).toBe(false);
+			expect(wrapper.vm.treatment).toBeUndefined();
 		});
 
 		it("correctly calculates treatment names for various treatments", () => {

@@ -266,13 +266,23 @@ The scoped slot properties contain information about the A/B Smartly context and
 }
 ```
 
-If the experiment is not running, or the context creation failed, the slot will be rendered with:
+If the experiment is not running, the slot will be rendered with:
 
 ```json
 {
     "treatment": 0,
     "ready": true,
     "failed": false
+}
+```
+
+If the context creation failed, the slot will be rendered with `failed: true` (and the treatment value returned by the SDK, normally `0`):
+
+```json
+{
+    "treatment": 0,
+    "ready": true,
+    "failed": true
 }
 ```
 
@@ -301,7 +311,7 @@ const buttonColor = this.$absmartly.variableValue("button.color", "red");
 Peek at a treatment without triggering an exposure:
 
 ```javascript
-const treatment = this.$absmartly.peekTreatment("exp_test_experiment");
+const treatment = this.$absmartly.peek("exp_test_experiment");
 ```
 
 #### Peeking at Variables
@@ -490,8 +500,8 @@ new Vue({
 // store/index.js
 export default new Vuex.Store({
     actions: {
-        trackPurchase({ rootState }, { items, total }) {
-            const context = rootState._vm.$absmartly;
+        // Pass the context explicitly, e.g. this.$store.dispatch("trackPurchase", { context: this.$absmartly, items, total })
+        trackPurchase(_, { context, items, total }) {
             context.track("purchase", {
                 item_count: items.length,
                 total_amount: total,

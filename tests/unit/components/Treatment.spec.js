@@ -566,6 +566,40 @@ describe("Treatment.vue", () => {
 			expect(wrapper.vm.treatment).toBeUndefined();
 		});
 
+		it("falls back to a failed state instead of an unhandled rejection when updateState throws", async () => {
+			const defaultMock = jest.fn();
+			const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+			let resolveReady;
+			const readyPromise = new Promise(resolve => {
+				resolveReady = resolve;
+			});
+
+			mocks.$absmartly.isReady.mockReturnValue(false);
+			mocks.$absmartly.isFailed.mockReturnValue(false);
+			mocks.$absmartly.ready.mockReturnValue(readyPromise);
+
+			const wrapper = shallowMount(Treatment, {
+				propsData: { name: "test_exp" },
+				scopedSlots: { default: defaultMock },
+				mocks
+			});
+
+			mocks.$absmartly.isReady.mockReturnValue(true);
+			mocks.$absmartly.treatment.mockImplementation(() => {
+				throw new Error("boom");
+			});
+
+			resolveReady(true);
+			await readyPromise;
+			await new Promise(resolve => setTimeout(resolve, 0));
+
+			expect(wrapper.vm.failed).toBe(true);
+			expect(wrapper.vm.ready).toBe(true);
+			expect(wrapper.vm.treatment).toBe(0);
+			expect(errorSpy).toHaveBeenCalled();
+			errorSpy.mockRestore();
+		});
+
 		it("correctly calculates treatment names for various treatments", () => {
 			const testCases = [
 				{ treatment: 0, expected: ["A", "0", "default"] },

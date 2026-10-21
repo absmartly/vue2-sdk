@@ -81,6 +81,15 @@ export default {
                 if (!this._isDestroyed) {
                     updateState(context);
                 }
+            }).catch(error => {
+                // ready() never rejects; this only fires if updateState throws
+                if (!this._isDestroyed) {
+                    this.failed = true;
+                    this.ready = true;
+                    this.treatment = 0;
+                    this.treatmentNames = ["A", "0", "default"];
+                }
+                console.error("ABsmartly Treatment failed to update", error);
             });
         }
     }

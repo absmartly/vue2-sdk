@@ -19,7 +19,12 @@ describe("Treatment.vue", () => {
 		mocks = createMocks();
 	});
 
-	it("it should not render loading slot when ready", async () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+		jest.useRealTimers();
+	});
+
+	it("it should not render loading slot when ready", () => {
 		const slotMock = jest.fn();
 		const loadingMock = jest.fn();
 
@@ -226,33 +231,30 @@ describe("Treatment.vue", () => {
 		});
 	});
 
-	it.each([[0], [1], [2], [3], [4]])(
-		"should render default treatment slot for treatment %i",
-		treatment => {
-			const slotMock = jest.fn();
+	it.each([[0], [1], [2], [3], [4]])("should render default treatment slot for treatment %i", treatment => {
+		const slotMock = jest.fn();
 
-			mocks.$absmartly.isReady.mockReturnValue(true);
-			mocks.$absmartly.isFailed.mockReturnValue(false);
-			mocks.$absmartly.treatment.mockReturnValue(treatment);
+		mocks.$absmartly.isReady.mockReturnValue(true);
+		mocks.$absmartly.isFailed.mockReturnValue(false);
+		mocks.$absmartly.treatment.mockReturnValue(treatment);
 
-			shallowMount(Treatment, {
-				propsData: {
-					name: "test_exp"
-				},
-				scopedSlots: {
-					default: slotMock
-				},
-				mocks
-			});
+		shallowMount(Treatment, {
+			propsData: {
+				name: "test_exp"
+			},
+			scopedSlots: {
+				default: slotMock
+			},
+			mocks
+		});
 
-			expect(slotMock).toHaveBeenCalledTimes(1);
-			expect(slotMock).toHaveBeenCalledWith({
-				ready: true,
-				failed: false,
-				treatment
-			});
-		}
-	);
+		expect(slotMock).toHaveBeenCalledTimes(1);
+		expect(slotMock).toHaveBeenCalledWith({
+			ready: true,
+			failed: false,
+			treatment
+		});
+	});
 
 	it("should throw with no matching slot", () => {
 		const slotMock = jest.fn();
@@ -300,7 +302,7 @@ describe("Treatment.vue", () => {
 	});
 
 	describe("Timeout Behavior", () => {
-		it("shows loading state during async ready", async () => {
+		it("shows loading state during async ready", () => {
 			const loadingMock = jest.fn();
 			const defaultMock = jest.fn();
 
@@ -460,7 +462,7 @@ describe("Treatment.vue", () => {
 			expect(wrapper.vm.treatmentNames).toEqual(["B", "1", "default"]);
 		});
 
-		it("sets up ready promise listener when not ready on mount", async () => {
+		it("sets up ready promise listener when not ready on mount", () => {
 			const defaultMock = jest.fn();
 			const readyPromise = Promise.resolve(true);
 
@@ -670,7 +672,7 @@ describe("Treatment.vue", () => {
 			});
 		});
 
-		it("passes failed state in slot props during loading", async () => {
+		it("passes failed state in slot props during loading", () => {
 			const loadingMock = jest.fn();
 			const readyPromise = Promise.resolve(true);
 

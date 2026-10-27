@@ -129,7 +129,7 @@ Vue.use(absmartly.ABSmartlyVue, {
 
 | Option           | Type       | Required? |    Default     | Description                                                                                                                                                                  |
 | :--------------- | :--------- | :-------: | :------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| sdkOptions       | `Object`   |  &#9989;  | `undefined`    | Options passed to the JavaScript SDK constructor (endpoint, apiKey, environment, application).                                                                               |
+| sdkOptions       | `Object`   | Conditional | `undefined`    | Required unless `context` is a pre-created `Context` instance. Options passed to the JavaScript SDK constructor (endpoint, apiKey, environment, application).                                                                               |
 | context          | `Object`   |  &#9989;  | `undefined`    | Context definition with `units` mapping. Can also be a pre-created `Context` instance.                                                                                       |
 | contextOptions   | `Object`   |  &#10060; | `{ refreshPeriod: 300000 }` | Options for context creation. `refreshPeriod` sets automatic refresh interval in milliseconds.                                                          |
 | data             | `Object`   |  &#10060; | `undefined`    | Pre-fetched context data for server-side rendering scenarios.                                                                                                                |
@@ -200,7 +200,7 @@ The slot selection rules are as follows:
     - Otherwise, if a slot with the treatment index exists, select it
     - Otherwise, select the `default` slot
 
-- If the selected slot does not exist, nothing will be rendered
+- If no matching slot exists, the component throws a `No matching treatment slots...` error.
 
 #### Example using treatment aliases
 

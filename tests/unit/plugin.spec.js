@@ -262,11 +262,11 @@ describe("ABSmartly Vue.js Plugin", () => {
 	});
 
 	describe("Plugin Integration", () => {
-		it("should install global __absmartlyGlobal property on Vue prototype", () => {
+		it("should expose the context on Vue prototype", () => {
 			const localVue = createLocalVue();
 			localVue.use(ABSmartly, { sdkOptions });
 
-			expect(localVue.prototype.__absmartlyGlobal).toBe("$absmartly");
+			expect(localVue.prototype.$absmartly).toBeInstanceOf(Context);
 		});
 
 		it("should provide $absmartly method in component instances", () => {
@@ -275,7 +275,6 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 			const wrapper = mount(Component, { localVue });
 
-			expect(typeof wrapper.vm.$absmartly).toBe("object");
 			expect(wrapper.vm.$absmartly).toBeInstanceOf(Context);
 		});
 
@@ -290,6 +289,7 @@ describe("ABSmartly Vue.js Plugin", () => {
 
 			expect(firstContext).toBeDefined();
 			expect(secondContext).toBeDefined();
+			expect(firstContext).toBe(secondContext);
 		});
 
 		it("should work with different global name configurations", () => {

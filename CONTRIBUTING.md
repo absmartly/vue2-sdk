@@ -19,6 +19,15 @@ The information below describes how to build and test the project, and how to su
 10. Check for conflicts once the pull request is created to make sure your PR can be merged cleanly into `main`.
 11. Keep an eye out for any feedback or comments from A/B Smartly's SDK team.
 
+### Installing dependencies
+
+While `@absmartly/javascript-sdk` is a git dependency (until javascript-sdk 1.14.0 is published), `npm ci` installs it without its build output, because npm runs only a git dependency's `prepare` script, not its `prepack` build. Run the helper after installing; it builds the commit `package-lock.json` pins and installs it in `node_modules`:
+
+```shell
+npm ci
+scripts/install-javascript-sdk.sh
+```
+
 ### Building the SDK
 
 For widespread use of the SDK with different environments and module formats, we have these different builds:

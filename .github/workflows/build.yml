@@ -10,10 +10,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # Temporary while @absmartly/javascript-sdk is a git dependency: npm only runs a git
+      # dependency's `prepare` script (husky), not its `prepack` build, so the installed package
+      # has no lib/es/dist. Build the commit the lockfile pins and install it like a registry
+      # release. Remove once the dependency is back on a published version.
+      - name: Read pinned javascript-sdk commit
+        id: jssdk
+        run: echo "ref=$(jq -r '.packages["node_modules/@absmartly/javascript-sdk"].resolved' package-lock.json | sed 's/.*#//')" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v3
+        with:
+          repository: absmartly/javascript-sdk
+          ref: ${{ steps.jssdk.outputs.ref }}
+          path: .javascript-sdk
+      - name: Set Node.js for javascript-sdk
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .javascript-sdk/.nvmrc
+      - name: Build javascript-sdk
+        working-directory: .javascript-sdk
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+          mv "$(npm pack --silent --ignore-scripts)" "$RUNNER_TEMP/javascript-sdk.tgz"
       - name: Set Node.js 16.x
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
       - run: npm ci
+      - name: Install built javascript-sdk
+        run: |
+          rm -rf node_modules/@absmartly/javascript-sdk .javascript-sdk
+          mkdir -p node_modules/@absmartly/javascript-sdk
+          tar -xzf "$RUNNER_TEMP/javascript-sdk.tgz" -C node_modules/@absmartly/javascript-sdk --strip-components=1
       - run: npm run build --if-present
       - run: npm test

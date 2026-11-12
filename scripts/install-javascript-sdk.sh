@@ -16,8 +16,9 @@ git clone --quiet https://github.com/absmartly/javascript-sdk.git "$work/javascr
 cd "$work/javascript-sdk"
 git checkout --quiet "$ref"
 npm ci --ignore-scripts
-npm run build
-tarball="$work/javascript-sdk/$(npm pack --silent --ignore-scripts)"
+# `npm pack` runs the package's prepack script, which is its full build.
+npm pack --pack-destination "$work" >/dev/null
+tarball="$(ls "$work"/*.tgz)"
 
 target="$root/node_modules/@absmartly/javascript-sdk"
 rm -rf "$target"

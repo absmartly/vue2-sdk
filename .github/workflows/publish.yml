@@ -95,6 +95,24 @@ jobs:
             exit 1
           fi
 
+      - name: Check version is not already on npm
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          ALL_VERSIONS=$(npm view "$PACKAGE_NAME" versions --json)
+          if echo "$ALL_VERSIONS" | jq -e --arg v "$VERSION" 'if type == "array" then index($v) != null else . == $v end' >/dev/null; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "::warning::${PACKAGE_NAME}@${VERSION} is already on npm; a real publish of this version would fail"
+            else
+              echo "${PACKAGE_NAME}@${VERSION} is already on npm - bump package.json version first" >&2
+              exit 1
+            fi
+          else
+            echo "${PACKAGE_NAME}@${VERSION} is not on npm yet"
+          fi
+
       # npm rejects provenance (E422) unless package.json "repository"
       # points at the repo running this workflow. Checked here so a dry run
       # catches it too.

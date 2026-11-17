@@ -284,7 +284,31 @@ describe("Treatment.vue", () => {
 
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledTimes(1);
 		expect(mocks.$absmartly.treatment).toHaveBeenCalledWith("test_exp");
-		expect(mocks.$absmartly.attributes).not.toHaveBeenCalledWith();
+		expect(mocks.$absmartly.attributes).not.toHaveBeenCalled();
 		expect(slotMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("should pass failed state to the slot when the context failed", async () => {
+		const slotMock = jest.fn();
+		mocks.$absmartly.isReady.mockReturnValue(true);
+		mocks.$absmartly.isFailed.mockReturnValue(true);
+		mocks.$absmartly.treatment.mockReturnValue(0);
+
+		shallowMount(Treatment, {
+			propsData: {
+				name: "test_exp"
+			},
+			scopedSlots: {
+				default: slotMock
+			},
+			mocks
+		});
+
+		expect(slotMock).toHaveBeenCalledTimes(1);
+		expect(slotMock).toHaveBeenCalledWith({
+			ready: true,
+			failed: true,
+			treatment: 0
+		});
 	});
 });

@@ -53,6 +53,6 @@ Releases are published to npm by the [Publish workflow](.github/workflows/publis
 
 1. Bump `version` in `package.json` (and `package-lock.json`) on `main`.
 2. Push a tag equal to `v` + that version, e.g. `git tag v1.2.2 && git push origin v1.2.2`. The workflow fails if the tag and `package.json` version differ.
-3. The workflow runs `npm ci`, the tests and the build, then `npm publish --provenance --access public`. A release whose major version is lower than the current `latest` major on npm is published under the `latest-<major>` dist-tag instead (e.g. `latest-1`), so it never becomes `latest`.
+3. The workflow runs `npm ci --ignore-scripts`, the tests and the build, then `npm publish --provenance --access public`. A release whose major version is lower than the current `latest` major on npm is published under the `latest-<major>` dist-tag instead (e.g. `latest-1`), so it never becomes `latest`.
 
 To check the pipeline without publishing, run the workflow manually from the Actions tab; `dry_run` defaults to `true` and skips only the `npm publish` step.

@@ -1,6 +1,10 @@
 {
 	"name": "@absmartly/vue2-sdk",
 	"version": "1.2.1",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/absmartly/vue2-sdk.git"
+	},
 	"homepage": "https://github.com/absmartly/vue2-sdk#README.md",
 	"bugs": "https://github.com/absmartly/vue2-sdk/issues",
 	"keywords": [

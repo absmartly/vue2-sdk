@@ -95,6 +95,22 @@ jobs:
             exit 1
           fi
 
+      # npm rejects provenance (E422) unless package.json "repository"
+      # points at the repo running this workflow. Checked here so a dry run
+      # catches it too.
+      - name: Check package.json repository matches this repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL=$(node -p "const r = require('./package.json').repository; (r && (r.url || r)) || ''")
+          NORMALIZED=$(echo "$URL" | sed -E 's#^git\+##; s#^git://#https://#; s#\.git$##')
+          EXPECTED="https://github.com/${GITHUB_REPOSITORY}"
+          if [ "$NORMALIZED" != "$EXPECTED" ]; then
+            echo "package.json repository '${URL}' must point at ${EXPECTED}" >&2
+            exit 1
+          fi
+          echo "package.json repository matches ${EXPECTED}"
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
 

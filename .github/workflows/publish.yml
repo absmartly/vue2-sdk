@@ -1,0 +1,166 @@
+name: Publish
+
+# Publishes @absmartly/vue2-sdk to npm via npm Trusted Publishing (OIDC).
+# The npm package is configured to trust this exact workflow file name
+# (publish.yml) running in the "npm" environment of absmartly/vue2-sdk.
+#
+# Release: bump package.json "version" on main, then push a matching tag
+# (e.g. version 1.2.2 -> tag v1.2.2). The tag must equal "v" + version.
+#
+# Manual run (Actions > Publish > Run workflow) defaults to dry_run=true,
+# which runs every step except the actual `npm publish`.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run every step except npm publish"
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PACKAGE_NAME: "@absmartly/vue2-sdk"
+      # Tag pushes always publish; manual runs only publish when dry_run is false.
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing needs npm >= 11.5.1.
+      - name: Upgrade npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install -g npm@latest
+          NPM_VERSION=$(npm --version)
+          echo "npm ${NPM_VERSION}"
+          node -e '
+            const [a, b, c] = process.argv[1].split(".").map(Number);
+            const ok = a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1)));
+            if (!ok) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1); }
+          ' "$NPM_VERSION"
+
+      - name: Read version from package.json
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          V=$(node -p "require('./package.json').version")
+          if [ -z "$V" ] || [ "$V" = "undefined" ]; then
+            echo "package.json has no version field" >&2
+            exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag matches package.json version
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            if [ "$GITHUB_REF_NAME" != "v${VERSION}" ]; then
+              echo "Tag ${GITHUB_REF_NAME} does not match package.json version ${VERSION} (expected v${VERSION})" >&2
+              exit 1
+            fi
+            echo "Tag ${GITHUB_REF_NAME} matches package.json version ${VERSION}"
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run on ${GITHUB_REF_NAME} (not a tag) - skipping tag check"
+          else
+            echo "Publishing requires a v* tag ref; run on a tag or use dry_run" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test
+        run: npm test
+
+      # webpack 4 (vue-cli 4) needs the legacy OpenSSL provider on Node >= 17.
+      - name: Build
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+        run: npm run build
+
+      - name: Derive npm dist-tag
+        id: tag
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          MAJOR=${VERSION%%.*}
+          case "$VERSION" in
+            *-alpha*) TAG=alpha ;;
+            *-beta*)  TAG=beta ;;
+            *-*)      TAG=next ;;
+            *)
+              # Never move "latest" backwards to an older major line: a 1.x
+              # release published after 2.x exists goes to "latest-1".
+              # (npm rejects semver-range tag names such as "v1".)
+              # Fail closed: if the registry lookup fails we cannot tell
+              # whether "latest" would move backwards.
+              LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest)
+              LATEST_MAJOR=${LATEST%%.*}
+              if ! [[ "$LATEST_MAJOR" =~ ^[0-9]+$ ]]; then
+                echo "Could not read the current latest version of ${PACKAGE_NAME} (got '${LATEST}')" >&2
+                exit 1
+              fi
+              if [ "$MAJOR" -lt "$LATEST_MAJOR" ]; then
+                TAG="latest-${MAJOR}"
+              else
+                TAG=latest
+              fi
+              echo "Current latest on npm: ${LATEST:-<none>}"
+              ;;
+          esac
+          echo "Publishing ${VERSION} with dist-tag ${TAG}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Show package contents
+        run: npm pack --dry-run --ignore-scripts
+
+      # --ignore-scripts: dist was built above from the lockfile; skip the
+      # "prepack" script, which would run `npm upgrade` and rebuild.
+      #
+      # Auth: Trusted Publishing (OIDC) is used when available. NODE_AUTH_TOKEN
+      # is only a documented fallback (the NPM_TOKEN secret exists) and can be
+      # removed once Trusted Publishing is confirmed working.
+      - name: Publish to npm
+        if: env.DRY_RUN != 'true'
+        env:
+          NPM_TAG: ${{ steps.tag.outputs.tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public --ignore-scripts --tag "$NPM_TAG"
+
+      - name: Dry run summary
+        if: env.DRY_RUN == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          NPM_TAG: ${{ steps.tag.outputs.tag }}
+        run: echo "Dry run - would publish ${PACKAGE_NAME}@${VERSION} with --tag ${NPM_TAG}"

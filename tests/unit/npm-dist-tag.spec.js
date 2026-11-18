@@ -22,7 +22,10 @@ describe("npm-dist-tag.sh", () => {
 		["1.2.0", "1.3.0", "latest-1.2"],
 		["1.2.3", "1.2.10", "latest-1.2"],
 		["1.9.0", "1.10.0", "latest-1.9"],
-		["1.2.0", "1.2.1", "latest-1.2"]
+		["1.2.0", "1.2.1", "latest-1.2"],
+		// Parsed as decimal, not octal: 08 and 09 are invalid octal in bash.
+		["1.08.0", "1.9.0", "latest-1.8"],
+		["1.9.0", "1.08.0", "latest"]
 	])("publishes stable %s under %s when latest is %s", (version, latest, expected) => {
 		expect(distTag(version, latest)).toEqual({ status: 0, tag: expected, error: "" });
 	});

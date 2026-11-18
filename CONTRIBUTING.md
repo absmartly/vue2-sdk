@@ -55,7 +55,9 @@ Releases are published to npm by the [Publish workflow](.github/workflows/publis
 
    Publish runs are serialised across all tags and queued, never cancelled, so two releases pushed together publish one after the other.
 
-To check the pipeline without publishing, run the workflow manually from the Actions tab; `dry_run` defaults to `true` and skips only the `npm publish` step.
+   `latest-<major>` and `latest-<major>.<minor>` always point at the most recently published release of their line, even if it is older (e.g. publishing `1.3.5` after `1.4.0` moves `latest-1` back to `1.3.5`). Only `latest` is protected against moving backwards.
+
+To check the pipeline without publishing, run the workflow manually from the Actions tab; `dry_run` defaults to `true` and skips the `npm publish` step. A dry run is also more lenient than a release: on a branch (not a `v*` tag) it skips the tag and on-`main` checks, and a version that is already on npm only produces a warning. The repository check, tests, build, dist-tag selection and package listing all run as in a release.
 
 # Contact
 

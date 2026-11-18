@@ -9,7 +9,12 @@ name: Publish
 # and point at a commit on main.
 #
 # Manual run (Actions > Publish > Run workflow) defaults to dry_run=true,
-# which runs every step except the actual `npm publish`.
+# which runs the build job (checks, tests, build, dist-tag) but not the
+# publish job.
+#
+# Only the publish job has id-token: write and the "npm" environment. It
+# runs no repository code (no install, test or build): it publishes the
+# dist built by the build job.
 
 on:
   push:
@@ -34,16 +39,17 @@ concurrency:
   queue: max
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment: npm
     permissions:
       contents: read
-      id-token: write
     env:
       PACKAGE_NAME: "@absmartly/vue2-sdk"
       # Tag pushes always publish; manual runs only publish when dry_run is false.
       DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -58,22 +64,6 @@ jobs:
         with:
           node-version: 24
           registry-url: "https://registry.npmjs.org"
-
-      # Trusted Publishing needs npm >= 11.5.1. Pinned to the 11 line: npm 12
-      # needs a newer Node than setup-node may resolve, and this job holds
-      # id-token: write.
-      - name: Upgrade npm
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm install -g npm@11
-          NPM_VERSION=$(npm --version)
-          echo "npm ${NPM_VERSION}"
-          node -e '
-            const [a, b, c] = process.argv[1].split(".").map(Number);
-            const ok = a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1)));
-            if (!ok) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1); }
-          ' "$NPM_VERSION"
 
       - name: Read version from package.json
         id: version
@@ -100,7 +90,12 @@ jobs:
             fi
             echo "Tag ${GITHUB_REF_NAME} matches package.json version ${VERSION}"
             # Releases must come from main, not from a tag on an unmerged branch.
-            if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            # Full ref name: a tag called "origin/main" would shadow the short name.
+            if ! MAIN_SHA=$(git show-ref --verify --hash refs/remotes/origin/main); then
+              echo "refs/remotes/origin/main is missing from the checkout" >&2
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$GITHUB_SHA" "$MAIN_SHA"; then
               echo "Tag ${GITHUB_REF_NAME} (${GITHUB_SHA}) is not on main; tag a commit that is on main" >&2
               exit 1
             fi
@@ -178,18 +173,14 @@ jobs:
       - name: Show package contents
         run: npm pack --dry-run --ignore-scripts
 
-      # --ignore-scripts: dist was built above from the lockfile; skip the
-      # "prepack" script, which would run `npm upgrade` and rebuild.
-      #
-      # Auth: Trusted Publishing (OIDC) is used when available. NODE_AUTH_TOKEN
-      # is only a documented fallback (the NPM_TOKEN secret exists) and can be
-      # removed once Trusted Publishing is confirmed working.
-      - name: Publish to npm
+      - name: Upload dist
         if: env.DRY_RUN != 'true'
-        env:
-          NPM_TAG: ${{ steps.tag.outputs.tag }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public --ignore-scripts --tag "$NPM_TAG"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Dry run summary
         if: env.DRY_RUN == 'true'
@@ -197,3 +188,64 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           NPM_TAG: ${{ steps.tag.outputs.tag }}
         run: echo "Dry run - would publish ${PACKAGE_NAME}@${VERSION} with --tag ${NPM_TAG}"
+
+  publish:
+    needs: build
+    # Same condition as DRY_RUN above: never on a dry run, so a branch dry
+    # run never enters the "npm" environment or gets an OIDC token.
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # Only for package.json and the other packed files; nothing from the
+      # checkout is executed.
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing needs npm >= 11.5.1. Pinned to the 11 line: npm 12
+      # needs a newer Node than setup-node may resolve, and this job holds
+      # id-token: write.
+      - name: Upgrade npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install -g npm@11
+          NPM_VERSION=$(npm --version)
+          echo "npm ${NPM_VERSION}"
+          node -e '
+            const [a, b, c] = process.argv[1].split(".").map(Number);
+            const ok = a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1)));
+            if (!ok) { console.error("npm >= 11.5.1 is required for Trusted Publishing"); process.exit(1); }
+          ' "$NPM_VERSION"
+
+      - name: Download dist
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+
+      - name: Show package contents
+        run: npm pack --dry-run --ignore-scripts
+
+      # --ignore-scripts: dist was built by the build job from the lockfile;
+      # skip the "prepack" script, which would run `npm upgrade` and rebuild.
+      #
+      # Auth: Trusted Publishing (OIDC) is used when available. NODE_AUTH_TOKEN
+      # is only a documented fallback (the NPM_TOKEN secret exists) and can be
+      # removed once Trusted Publishing is confirmed working.
+      - name: Publish to npm
+        env:
+          NPM_TAG: ${{ needs.build.outputs.tag }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public --ignore-scripts --tag "$NPM_TAG"

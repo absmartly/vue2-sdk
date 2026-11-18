@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-# Prints the npm dist-tag to publish VERSION under, given LATEST, the
-# version the "latest" dist-tag points at now (empty if unknown).
-#
-#   prerelease                        -> alpha / beta / next
-#   stable, newer than LATEST         -> latest
-#   stable, older major than LATEST   -> latest-<major>        (e.g. latest-1)
-#   stable, older but same major      -> latest-<major>.<minor> (e.g. latest-1.2)
-#
-# So "latest" never moves backwards. Fails closed for stable releases when
-# LATEST is not a plain x.y.z version, as we cannot tell which way it moves.
+# Usage: npm-dist-tag.sh VERSION LATEST (LATEST: current "latest" on npm).
+# The rules are documented in CONTRIBUTING.md ("Releasing") and pinned by
+# tests/unit/npm-dist-tag.spec.js. Fails closed for stable releases when
+# LATEST is not a plain x.y.z version, as we cannot tell whether "latest"
+# would move backwards.
 # (npm rejects tag names that are semver ranges, such as "v1" or "1.2".)
 set -euo pipefail
 
+# Build metadata ("+...") does not affect precedence or the channel, so
+# 1.3.0+ci-alpha is a stable release.
 VERSION=${1:?usage: npm-dist-tag.sh VERSION LATEST}
+VERSION=${VERSION%%+*}
 LATEST=${2-}
+LATEST=${LATEST%%+*}
 SEMVER='^([0-9]+)\.([0-9]+)\.([0-9]+)$'
 
 case "$VERSION" in

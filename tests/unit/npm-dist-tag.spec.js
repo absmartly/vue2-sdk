@@ -5,6 +5,9 @@ const script = path.resolve(__dirname, "../../.github/scripts/npm-dist-tag.sh");
 
 function distTag(version, latest) {
 	const result = spawnSync("bash", [script, version, latest], { encoding: "utf8" });
+	if (result.error) {
+		throw new Error(`Could not run ${script} with bash (bash must be on PATH): ${result.error.message}`);
+	}
 	return { status: result.status, tag: result.stdout.trim(), error: result.stderr.trim() };
 }
 
@@ -25,7 +28,10 @@ describe("npm-dist-tag.sh", () => {
 		["1.2.0", "1.2.1", "latest-1.2"],
 		// Parsed as decimal, not octal: 08 and 09 are invalid octal in bash.
 		["1.08.0", "1.9.0", "latest-1.8"],
-		["1.9.0", "1.08.0", "latest"]
+		["1.9.0", "1.08.0", "latest"],
+		["1.3.0+ci-alpha", "1.2.1", "latest"],
+		["1.3.0+build.5", "1.3.0+build.7", "latest"],
+		["1.2.0+ci", "1.3.0+ci", "latest-1.2"]
 	])("publishes stable %s under %s when latest is %s", (version, latest, expected) => {
 		expect(distTag(version, latest)).toEqual({ status: 0, tag: expected, error: "" });
 	});
@@ -36,7 +42,9 @@ describe("npm-dist-tag.sh", () => {
 		["3.0.0-beta.1", "2.0.0", "beta"],
 		["1.3.0-rc.1", "2.0.0", "next"],
 		["1.3.0-beta.1", "", "beta"],
-		["1.3.0-rc.1", "garbage", "next"]
+		["1.3.0-rc.1", "garbage", "next"],
+		["1.3.0-rc.1+ci-alpha", "1.2.1", "next"],
+		["1.3.0-beta.1+ci-alpha", "1.2.1", "beta"]
 	])("publishes prerelease %s under its prerelease tag (latest %s)", (version, latest, expected) => {
 		expect(distTag(version, latest)).toEqual({ status: 0, tag: expected, error: "" });
 	});

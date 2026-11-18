@@ -48,7 +48,6 @@ jobs:
       # Tag pushes always publish; manual runs only publish when dry_run is false.
       DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
     outputs:
-      version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Checkout code
@@ -107,12 +106,15 @@ jobs:
             exit 1
           fi
 
+      # npm stores versions without +build metadata, so 1.2.1+ci.5 would
+      # publish as (and collide with) 1.2.1.
       - name: Check version is not already on npm
         shell: bash
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          FULL_VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
+          VERSION=${FULL_VERSION%%+*}
           ALL_VERSIONS=$(npm view "$PACKAGE_NAME" versions --json)
           if echo "$ALL_VERSIONS" | jq -e --arg v "$VERSION" 'if type == "array" then index($v) != null else . == $v end' >/dev/null; then
             if [ "$DRY_RUN" = "true" ]; then

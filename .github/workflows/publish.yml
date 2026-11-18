@@ -5,7 +5,8 @@ name: Publish
 # (publish.yml) running in the "npm" environment of absmartly/vue2-sdk.
 #
 # Release: bump package.json "version" on main, then push a matching tag
-# (e.g. version 1.2.2 -> tag v1.2.2). The tag must equal "v" + version.
+# (e.g. version 1.2.2 -> tag v1.2.2). The tag must equal "v" + version
+# and point at a commit on main.
 #
 # Manual run (Actions > Publish > Run workflow) defaults to dry_run=true,
 # which runs every step except the actual `npm publish`.
@@ -48,6 +49,9 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          # Full history, so the tag check below can see whether the tagged
+          # commit is on main.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -55,12 +59,14 @@ jobs:
           node-version: 24
           registry-url: "https://registry.npmjs.org"
 
-      # Trusted Publishing needs npm >= 11.5.1.
+      # Trusted Publishing needs npm >= 11.5.1. Pinned to the 11 line: npm 12
+      # needs a newer Node than setup-node may resolve, and this job holds
+      # id-token: write.
       - name: Upgrade npm
         shell: bash
         run: |
           set -euo pipefail
-          npm install -g npm@latest
+          npm install -g npm@11
           NPM_VERSION=$(npm --version)
           echo "npm ${NPM_VERSION}"
           node -e '
@@ -93,6 +99,12 @@ jobs:
               exit 1
             fi
             echo "Tag ${GITHUB_REF_NAME} matches package.json version ${VERSION}"
+            # Releases must come from main, not from a tag on an unmerged branch.
+            if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+              echo "Tag ${GITHUB_REF_NAME} (${GITHUB_SHA}) is not on main; tag a commit that is on main" >&2
+              exit 1
+            fi
+            echo "Tagged commit ${GITHUB_SHA} is on main"
           elif [ "$DRY_RUN" = "true" ]; then
             echo "Dry run on ${GITHUB_REF_NAME} (not a tag) - skipping tag check"
           else
@@ -146,6 +158,10 @@ jobs:
           NODE_OPTIONS: --openssl-legacy-provider
         run: npm run build
 
+      # Rules in .github/scripts/npm-dist-tag.sh. A failed registry lookup
+      # leaves LATEST empty, which the script rejects for stable releases
+      # (we cannot tell whether "latest" would move backwards) but ignores
+      # for prereleases, whose tag does not depend on it.
       - name: Derive npm dist-tag
         id: tag
         shell: bash
@@ -153,31 +169,9 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          MAJOR=${VERSION%%.*}
-          case "$VERSION" in
-            *-alpha*) TAG=alpha ;;
-            *-beta*)  TAG=beta ;;
-            *-*)      TAG=next ;;
-            *)
-              # Never move "latest" backwards to an older major line: a 1.x
-              # release published after 2.x exists goes to "latest-1".
-              # (npm rejects semver-range tag names such as "v1".)
-              # Fail closed: if the registry lookup fails we cannot tell
-              # whether "latest" would move backwards.
-              LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest)
-              LATEST_MAJOR=${LATEST%%.*}
-              if ! [[ "$LATEST_MAJOR" =~ ^[0-9]+$ ]]; then
-                echo "Could not read the current latest version of ${PACKAGE_NAME} (got '${LATEST}')" >&2
-                exit 1
-              fi
-              if [ "$MAJOR" -lt "$LATEST_MAJOR" ]; then
-                TAG="latest-${MAJOR}"
-              else
-                TAG=latest
-              fi
-              echo "Current latest on npm: ${LATEST:-<none>}"
-              ;;
-          esac
+          LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest) || LATEST=""
+          echo "Current latest on npm: ${LATEST:-<none>}"
+          TAG=$(.github/scripts/npm-dist-tag.sh "$VERSION" "$LATEST")
           echo "Publishing ${VERSION} with dist-tag ${TAG}"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 

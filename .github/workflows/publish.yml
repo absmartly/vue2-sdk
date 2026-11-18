@@ -23,9 +23,14 @@ on:
 
 permissions: {}
 
+# One publish at a time for the whole package, not per tag: the dist-tag
+# lookup and `npm publish` must not interleave across releases, or an older
+# major could read "latest" before a newer major publishes and then move it
+# back. queue: max keeps every pending release instead of replacing it.
 concurrency:
-  group: publish-${{ github.ref }}
+  group: publish-${{ github.repository }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   publish:
